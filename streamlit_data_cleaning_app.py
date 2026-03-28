@@ -5,7 +5,7 @@ import io
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-st.set_page_config(page_title="Data Cleaning App"G)
+st.set_page_config(page_title="Data Cleaning App")
 
 # Get file extension
 def get_file_extension(file):
