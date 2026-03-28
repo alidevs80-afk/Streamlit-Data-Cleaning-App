@@ -66,7 +66,7 @@ if "df" in st.session_state:
     st.subheader("Dataset Info")
     colA, colB = st.columns(2)
     colA.write(f"Shape: {df.shape}")
-    colB.write(f"Columns: {df.columns.tolist()}")
+    colB.write(f"Columns: {list(df.columns)}")
 
     # Cleaning buttons
     st.subheader("Data Cleaning")
@@ -92,9 +92,11 @@ if "df" in st.session_state:
             st.session_state.df = st.session_state.original_df.copy()
             st.success("Data reset")
 
+    df = st.session_state.df
+
     # Detailed analysis
     with st.expander("Detailed Analysis"):
-        if st.button("Dataset Info"):
+        if st.button("Dataset Info Detail"):
             buffer = io.StringIO()
             df.info(buf=buffer)
             st.text(buffer.getvalue())
@@ -108,8 +110,6 @@ if "df" in st.session_state:
         if st.button("Data Types"):
             st.write(df.dtypes)
 
-    df = st.session_state.df
-
     # Visualization
     st.subheader("Data Visualization")
 
@@ -118,50 +118,61 @@ if "df" in st.session_state:
 
     if numeric_cols:
         col_choice = st.selectbox("Histogram Column", numeric_cols)
+
         fig, ax = plt.subplots()
         sns.histplot(df[col_choice], kde=True, ax=ax)
         st.pyplot(fig)
+        plt.close(fig)
 
         st.write(f"Boxplot of {col_choice}")
         fig, ax = plt.subplots()
         sns.boxplot(x=df[col_choice], ax=ax)
         st.pyplot(fig)
+        plt.close(fig)
 
     if len(numeric_cols) >= 2:
         x_axis = st.selectbox("X-axis", numeric_cols, index=0)
         y_axis = st.selectbox("Y-axis", numeric_cols, index=1)
+
         fig, ax = plt.subplots()
         sns.scatterplot(x=df[x_axis], y=df[y_axis], ax=ax)
         st.pyplot(fig)
+        plt.close(fig)
 
     if st.checkbox("Show Correlation Heatmap"):
         if len(numeric_cols) > 1:
             fig, ax = plt.subplots(figsize=(8, 6))
             sns.heatmap(df[numeric_cols].corr(), annot=True, cmap="coolwarm", ax=ax)
             st.pyplot(fig)
+            plt.close(fig)
         else:
             st.warning("Not enough numeric columns")
 
     if categorical_cols:
         cat_choice = st.selectbox("Categorical Column (Bar Chart)", categorical_cols)
+
         fig, ax = plt.subplots()
         df[cat_choice].value_counts().plot(kind="bar", ax=ax)
         st.pyplot(fig)
+        plt.close(fig)
 
     if st.checkbox("Show Missing Values Heatmap"):
         fig, ax = plt.subplots(figsize=(8, 6))
-        sns.heatmap(df.isnull(), cbar=False, cmap="viridis")
+        sns.heatmap(df.isnull(), cbar=False, cmap="viridis", ax=ax)
         st.pyplot(fig)
+        plt.close(fig)
 
     if st.checkbox("Show Pairplot"):
         if len(numeric_cols) > 1:
             fig = sns.pairplot(df[numeric_cols])
             st.pyplot(fig)
+            plt.close()
         else:
             st.warning("Not enough numeric columns")
 
     # Download cleaned dataset
     st.subheader("Download Cleaned Data")
+
     file_format = st.selectbox("Select format", ["CSV", "Excel", "JSON", "Parquet"])
 
     if file_format == "CSV":
